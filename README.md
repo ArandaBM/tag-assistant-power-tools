@@ -4,6 +4,20 @@
 
 A Chrome and Microsoft Edge extension that helps you focus on relevant events in [Google Tag Assistant](https://tagassistant.google.com/): select events, hide noise, and highlight what matters.
 
+**[Download the ready-to-use ZIP — v0.1.0 preview](https://github.com/ArandaBM/tag-assistant-power-tools/releases/download/v0.1.0/tag-assistant-power-tools.zip)** · [Release details](https://github.com/ArandaBM/tag-assistant-power-tools/releases/tag/v0.1.0)
+
+## Try it without building
+
+No Node.js, npm, or Git required.
+
+1. Download **tag-assistant-power-tools.zip** using the link above. The GitHub **Source code** archives are not the ready-to-use extension.
+2. Extract the ZIP into a permanent folder on your computer. Do not try to load the ZIP itself.
+3. Open `chrome://extensions` (Chrome) or `edge://extensions` (Edge).
+4. Enable **Developer mode**, click **Load unpacked**, and select the extracted folder containing **manifest.json**.
+5. Open or refresh a debug session in [Tag Assistant](https://tagassistant.google.com/), then click the Power Tools button.
+
+Keep the extracted folder: the browser loads the extension from it. This is a manual preview installation, not a Chrome Web Store or Edge Add-ons installation. For future updates, extract the new package over the same folder, click **Reload** on the extensions page, and refresh Tag Assistant.
+
 ## Features
 
 - **Events:** searchable list of detected event names, with occurrence counts and multiple selection.
@@ -19,7 +33,7 @@ A Chrome and Microsoft Edge extension that helps you focus on relevant events in
 
 The extension changes the visualization only. It does not delete events or change the site's tracking implementation. Event names are not translated.
 
-## Install locally
+## Build from source (developers)
 
 Requirements: Git, npm, **Node.js 24.15 or newer in the 24.x line**, and Chrome or Microsoft Edge. This Node version supports the included development and test dependencies.
 

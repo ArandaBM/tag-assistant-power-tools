@@ -4,6 +4,20 @@
 
 Extensão para Chrome e Microsoft Edge que ajuda você a focar nos eventos relevantes do [Google Tag Assistant](https://tagassistant.google.com/): selecione eventos, oculte o ruído e destaque o que importa.
 
+**[Baixar ZIP pronto — v0.1.0 para testes](https://github.com/ArandaBM/tag-assistant-power-tools/releases/download/v0.1.0/tag-assistant-power-tools.zip)** · [Detalhes da versão](https://github.com/ArandaBM/tag-assistant-power-tools/releases/tag/v0.1.0)
+
+## Testar sem compilar
+
+Não é necessário instalar Node.js, npm ou Git.
+
+1. Baixe **tag-assistant-power-tools.zip** pelo link acima. Os arquivos **Source code** oferecidos pelo GitHub não são a extensão pronta.
+2. Extraia o ZIP para uma pasta permanente no computador. Não tente carregar o próprio ZIP.
+3. Abra `chrome://extensions` (Chrome) ou `edge://extensions` (Edge).
+4. Ative o **Modo do desenvolvedor**, clique em **Carregar sem compactação** e selecione a pasta extraída que contém o **manifest.json**.
+5. Abra ou atualize uma sessão de depuração no [Tag Assistant](https://tagassistant.google.com/) e clique no botão do Power Tools.
+
+Mantenha a pasta extraída: o navegador carrega a extensão a partir dela. Esta é uma instalação manual para testes, não uma instalação pelas lojas Chrome Web Store ou Edge Add-ons. Para atualizar futuramente, extraia o novo pacote sobre a mesma pasta, clique em **Recarregar** na página de extensões e atualize o Tag Assistant.
+
 ## Funcionalidades
 
 - **Eventos:** lista pesquisável dos nomes detectados, com contagem de ocorrências e seleção múltipla.
@@ -19,7 +33,7 @@ Extensão para Chrome e Microsoft Edge que ajuda você a focar nos eventos relev
 
 A extensão altera apenas a visualização. Ela não apaga eventos nem modifica a implementação de rastreamento do site. Os nomes dos eventos não são traduzidos.
 
-## Instalação local
+## Compilar a partir do código (desenvolvedores)
 
 Requisitos: Git, npm, **Node.js 24.15 ou mais recente na linha 24.x**, e Chrome ou Microsoft Edge. Essa versão do Node suporta as dependências de desenvolvimento e testes incluídas.
 
