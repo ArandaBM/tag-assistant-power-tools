@@ -1,110 +1,105 @@
 # Tag Assistant Power Tools
 
-Chrome extension that adds productivity and QA helpers to Google Tag Assistant.
+**English** | [Português (Brasil)](README.pt-BR.md)
 
-> Early MVP. The project is currently validating a robust way to identify event rows in the live Tag Assistant DOM without coupling the extension to fragile generated CSS classes.
+A Chrome and Microsoft Edge extension that helps you focus on relevant events in [Google Tag Assistant](https://tagassistant.google.com/): select events, hide noise, and highlight what matters.
 
-## v0.1
+## Features
 
-The first version focuses on the event stream:
+- **Events:** searchable list of detected event names, with occurrence counts and multiple selection.
+- **Show only selected:** apply an exact-name filter without typing. Active names appear as removable chips.
+- **Filter by text:** refine results using Contains, Exact, or Regex.
+- **Saved exclusions:** hide several event types, enable/disable individual rules, and keep preferences across sessions.
+- **Colors:** choose a detected event or type a name/pattern, then assign a color.
+- **Live updates:** filters, exclusions, colors, and counts follow incoming events.
+- **Temporary override:** show all events without deleting rules, then resume filtering.
+- **Focused sidebar:** separate Events, Exclusions, and Colors tabs; secondary controls and help expand on demand.
+- **Automatic language:** Portuguese and English, following the browser UI language. Other languages fall back to English.
+- **Feedback channel:** a footer link to the author's LinkedIn profile.
 
-- Filter events by `contains`, `exact` or `regex`
-- Hide or dim events that do not match the active filter
-- Create color rules for specific events or groups of events
-- Persist preferences with `chrome.storage.sync`
-- React to new Tag Assistant events with `MutationObserver`
-- Isolate Tag Assistant DOM parsing behind a dedicated adapter
-- Inject the UI through Shadow DOM to avoid style collisions
+The extension changes the visualization only. It does not delete events or change the site's tracking implementation. Event names are not translated.
 
-## Tech stack
+## Install locally
 
-- Chrome Extension Manifest V3
-- TypeScript
-- esbuild
-- Shadow DOM
-- Chrome Storage API
-
-## Project structure
-
-```text
-src/
-├── background/
-├── content/
-│   ├── event-styler.ts
-│   ├── index.ts
-│   └── tag-assistant-adapter.ts
-├── rules/
-├── storage/
-├── ui/
-└── types.ts
-```
-
-## Run locally
-
-Requirements: Node.js 20+ and Google Chrome.
+Requirements: Git, npm, **Node.js 24.15 or newer in the 24.x line**, and Chrome or Microsoft Edge. This Node version supports the included development and test dependencies.
 
 ```bash
-npm install
+git clone https://github.com/ArandaBM/tag-assistant-power-tools.git
+cd tag-assistant-power-tools
+npm ci
 npm run build
 ```
 
-Then open `chrome://extensions`, enable **Developer mode**, choose **Load unpacked**, and select the generated `dist` folder.
+1. Open `chrome://extensions` (Chrome) or `edge://extensions` (Edge).
+2. Enable **Developer mode**.
+3. Choose **Load unpacked** and select the generated **dist** folder.
+4. Open a real debug session in [Tag Assistant](https://tagassistant.google.com/).
+5. Click the floating Power Tools button in the bottom-right corner.
 
-Open a debug session at `https://tagassistant.google.com/`. A floating Power Tools button should appear in the bottom-right corner.
+After rebuilding, reload the extension on the browser's extensions page and refresh Tag Assistant. The `dist` folder is generated locally and is not committed to this repository.
 
-For development:
+## Using the extension
+
+### Events and filters
+
+The search field **only searches the sidebar list**. To change what Tag Assistant displays, check one or more event names and click **Show only selected**. This replaces the previous selected-name filter, clears its text query, and hides other names. Selected names match literally and case-sensitively.
+
+Use **Filter by text** to type a name or pattern. When selected names are active, the text further narrows that selection. Its hide checkbox lets you hide or dim nonmatching events. **Clear filter** removes the selected names and text query, while leaving saved exclusions intact.
+
+### Exclusions
+
+Click **Exclude selected** in Events, or add a rule in the Exclusions tab. Rules support Contains, Exact, and Regex; newly created exclusions ignore letter case. Matching any enabled exclusion hides the event, even when the main filter is empty or configured to dim other events.
+
+Disable an exclusion to keep it for later, or delete it. Blank rules do nothing. For example, an exact `scroll` exclusion hides `scroll`; a Contains `click` exclusion also hides `button_click`.
+
+Older negative filters migrate automatically into saved exclusions. Selected-name constraints and case sensitivity are preserved and shown in the migrated rule.
+
+### Colors
+
+Add a rule in Colors and **choose a detected event**. Selecting a name automatically sets Exact matching. For names not yet listed, or to match several events with a pattern, expand **Type a name or pattern**.
+
+Empty color rules have no effect. The first enabled matching color rule wins. Colors apply to events retained by filtering; the temporary show-all mode also keeps colors active.
+
+### Counts and temporary display
+
+Counts reflect event rows currently detected in Tag Assistant, including rows hidden by Power Tools. Dimmed events count as visible and are also identified separately. The event picker shows each name once with its occurrence count; it does **not** group or reorder the original Tag Assistant timeline.
+
+**Show all temporarily** pauses filtering and exclusions in the current tab. **Resume filtering** or a page reload restores them. This temporary choice is not saved or synced.
+
+## Preferences and limits
+
+- Filters, exclusions, and color rules are stored using `chrome.storage.sync`; browser sync behavior depends on the user's browser configuration.
+- The sidebar preserves its active tab, open sections, and scroll position during rule edits. Arrow keys and Home/End navigate its tabs.
+- The detected-event list is not a historical archive: events removed or unloaded by Tag Assistant may leave the list.
+- Detection uses numbered interactive rows and their titles, without depending on Tag Assistant CSS classes. Future changes to Google's DOM may require adapter updates.
+- Permissions are limited to extension storage and `https://tagassistant.google.com/*`.
+
+## Development
 
 ```bash
-npm run watch
+npm run watch       # Rebuild when source files change
+npm run typecheck   # TypeScript validation
+npm test            # Local DOM and behavior tests
+npm run build       # Generate dist
 ```
 
-After rebuilding, reload the extension from `chrome://extensions` when needed.
-
-## Why an adapter?
-
-Tag Assistant is a dynamic web application and its internal DOM can change. The extension intentionally keeps all event-discovery heuristics inside `TagAssistantAdapter` instead of spreading Tag Assistant-specific selectors throughout the codebase.
-
-The flow is:
+Run checks appropriate to the change. The automated tests use jsdom; real browser validation remains useful for changes involving Tag Assistant's live DOM.
 
 ```text
-Tag Assistant DOM
-       ↓
-TagAssistantAdapter
-       ↓
-Normalized events
-       ↓
-Filter + Color Rules
-       ↓
-EventStyler
+src/
+  background/       Extension background worker
+  content/          DOM adapter, event styling, and update loop
+  rules/            Filtering, exclusion, and color matching
+  storage/          Preferences and migration
+  ui/               Sidebar and Portuguese/English strings
+  types.ts          Shared types
+tests/              Focused behavior and integration tests
 ```
 
-This makes future DOM changes much cheaper to support.
+Built with TypeScript, esbuild, Manifest V3, Shadow DOM, and Chrome Storage API.
 
-## Roadmap
+## Suggestions and feedback
 
-### v0.2
+Created by **[Bruno Aranda](https://www.linkedin.com/in/brunoarandati/)**. Have a suggestion or found a problem? [Let's talk on LinkedIn](https://www.linkedin.com/in/brunoarandati/).
 
-- Validate the adapter against the current production Tag Assistant DOM
-- Event counters
-- Multiple include/exclude filters
-- Favorites
-- Better rule management
-
-### v0.3
-
-- Tracking specification import
-- Required parameter validation
-- Naming convention validation
-- Warnings and errors
-
-### Future
-
-- Reusable QA profiles
-- GA4 ecommerce presets
-- Session summaries
-- Exportable QA reports
-- Funnel/event-sequence analysis
-
-## Status
-
-This project is under active development and is not affiliated with or endorsed by Google.
+Future features will be guided by user feedback. This project is independent and is not affiliated with or endorsed by Google or Microsoft.

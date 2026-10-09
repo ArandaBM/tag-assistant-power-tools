@@ -3,8 +3,11 @@ import type { ExtensionSettings } from "../types";
 const STORAGE_KEY = "tagAssistantPowerToolsSettings";
 
 export const DEFAULT_SETTINGS: ExtensionSettings = {
+  exclusions: [],
   filter: {
     query: "",
+    eventNames: [],
+    action: "include",
     mode: "contains",
     hideUnmatched: true,
     caseSensitive: false
@@ -33,19 +36,36 @@ export async function getSettings(): Promise<ExtensionSettings> {
   const result = await chrome.storage.sync.get(STORAGE_KEY);
   const stored = result[STORAGE_KEY] as Partial<ExtensionSettings> | undefined;
 
-  if (!stored) {
-    return structuredClone(DEFAULT_SETTINGS);
-  }
+  const settings = normalizeSettings(stored);
+  if (stored?.filter?.action === "exclude") await saveSettings(settings);
+  return settings;
+}
 
-  return {
+function normalizeSettings(stored?: Partial<ExtensionSettings>): ExtensionSettings {
+  const settings: ExtensionSettings = {
     filter: {
       ...DEFAULT_SETTINGS.filter,
-      ...stored.filter
+      ...stored?.filter,
+      eventNames: Array.isArray(stored?.filter?.eventNames)
+        ? [...new Set(stored.filter.eventNames.filter((name) => typeof name === "string" && name.trim()))]
+        : []
     },
-    colorRules: Array.isArray(stored.colorRules)
+    colorRules: Array.isArray(stored?.colorRules)
       ? stored.colorRules
-      : DEFAULT_SETTINGS.colorRules
+      : structuredClone(DEFAULT_SETTINGS.colorRules),
+    exclusions: Array.isArray(stored?.exclusions) ? structuredClone(stored.exclusions) : []
   };
+  // Preserve old negative filters as a saved exclusion, including the
+  // intersection of exact selected names with a manually entered pattern.
+  if (settings.filter.action === "exclude") {
+    const { query, mode, caseSensitive, eventNames } = settings.filter;
+    if (query.trim() || eventNames.length) {
+      settings.exclusions.push({ id: crypto.randomUUID(), pattern: query,
+        mode, caseSensitive, eventNames: [...eventNames], enabled: true });
+    }
+    settings.filter = { ...settings.filter, action: "include", query: "", eventNames: [] };
+  }
+  return settings;
 }
 
 export async function saveSettings(settings: ExtensionSettings): Promise<void> {
@@ -60,7 +80,7 @@ export function subscribeToSettings(
     areaName: string
   ) => {
     if (areaName !== "sync" || !changes[STORAGE_KEY]) return;
-    callback(changes[STORAGE_KEY].newValue as ExtensionSettings);
+    callback(normalizeSettings(changes[STORAGE_KEY].newValue as Partial<ExtensionSettings> | undefined));
   };
 
   chrome.storage.onChanged.addListener(listener);
