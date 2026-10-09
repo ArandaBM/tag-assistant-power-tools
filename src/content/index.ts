@@ -12,11 +12,22 @@ async function initialize(): Promise<void> {
   const adapter = new TagAssistantAdapter();
   let settings: ExtensionSettings = await getSettings();
   let scheduled = false;
+  let lastEventCount = -1;
 
   const applyRules = () => {
     scheduled = false;
 
-    for (const event of adapter.findEvents()) {
+    const events = adapter.findEvents();
+
+    if (events.length !== lastEventCount) {
+      console.debug(
+        `[Tag Assistant Power Tools] Detected ${events.length} event row(s).`,
+        events.map((event) => event.name)
+      );
+      lastEventCount = events.length;
+    }
+
+    for (const event of events) {
       resetEventStyle(event);
 
       const matches = eventMatchesFilter(event.name, settings.filter);
@@ -46,8 +57,15 @@ async function initialize(): Promise<void> {
   sidebar.mount();
 
   subscribeToSettings((nextSettings) => {
+    const didActuallyChange =
+      JSON.stringify(nextSettings) !== JSON.stringify(settings);
+
     settings = nextSettings;
-    sidebar.updateSettings(settings);
+
+    if (didActuallyChange) {
+      sidebar.updateSettings(settings);
+    }
+
     scheduleApply();
   });
 
