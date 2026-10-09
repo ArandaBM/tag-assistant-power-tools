@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "Tag Assistant Power Tools",
+  "version": "0.1.0",
+  "description": "Adds filtering, highlighting and productivity tools to Google Tag Assistant.",
+  "permissions": ["storage"],
+  "host_permissions": ["https://tagassistant.google.com/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://tagassistant.google.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}
